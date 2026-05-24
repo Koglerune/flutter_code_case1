@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar/isar.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/database/local_database.dart';
 import '../models/driver_model.dart';
 
@@ -8,45 +8,38 @@ final driverListProvider = NotifierProvider<DriverListNotifier, List<Driver>>(
 );
 
 class DriverListNotifier extends Notifier<List<Driver>> {
-  Isar get _db => LocalDatabase.instance;
+  Box<Driver> get _box => LocalDatabase.driverBox;
 
   @override
   List<Driver> build() {
-    return _db.drivers.where().findAllSync();
+    return _box.values.toList();
   }
 
   void addDriver(String name) {
-    final newDriver = Driver()
-      ..name = name
-      ..status = DriverStatus.idle
-      ..lastUpdated = DateTime.now();
+    final newId = DateTime.now().millisecondsSinceEpoch.toString();
+    final newDriver = Driver(
+      id: newId,
+      name: name,
+      lastUpdated: DateTime.now(),
+    );
 
-    _db.writeTxnSync(() {
-      _db.drivers.putSync(newDriver);
-    });
-    
-    state = _db.drivers.where().findAllSync();
+    _box.put(newId, newDriver);
+    state = _box.values.toList();
   }
 
-  void updateDriverStatus(int id, DriverStatus newStatus) {
-    final driver = _db.drivers.getSync(id);
+  void updateDriverStatus(String id, DriverStatus newStatus) {
+    final driver = _box.get(id);
     if (driver != null) {
       driver.status = newStatus;
       driver.lastUpdated = DateTime.now();
       
-      _db.writeTxnSync(() {
-        _db.drivers.putSync(driver);
-      });
-      
-      state = _db.drivers.where().findAllSync();
+      driver.save();
+      state = _box.values.toList();
     }
   }
 
-  void deleteDriver(int id) {
-    _db.writeTxnSync(() {
-      _db.drivers.deleteSync(id);
-    });
-    
-    state = _db.drivers.where().findAllSync();
+  void deleteDriver(String id) {
+    _box.delete(id);
+    state = _box.values.toList();
   }
 }

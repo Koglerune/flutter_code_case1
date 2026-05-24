@@ -1,21 +1,32 @@
-import 'package:isar/isar.dart';
+import 'package:hive/hive.dart';
 
 part 'driver_model.g.dart';
 
+@HiveType(typeId: 0)
 enum DriverStatus {
-  idle,
-  waitingForLoad,
-  onRoute
+  @HiveField(0) idle,
+  @HiveField(1) waitingForLoad,
+  @HiveField(2) onRoute
 }
 
-@collection
-class Driver {
-  Id id = Isar.autoIncrement;
+@HiveType(typeId: 1)
+class Driver extends HiveObject {
+  @HiveField(0)
+  late String id;
 
+  @HiveField(1)
   late String name;
 
-  @enumerated
-  DriverStatus status = DriverStatus.idle;
+  @HiveField(2)
+  late DriverStatus status;
 
-  DateTime lastUpdated = DateTime.now();
+  @HiveField(3)
+  late DateTime lastUpdated;
+
+  Driver({
+    required this.id,
+    required this.name,
+    this.status = DriverStatus.idle,
+    required this.lastUpdated,
+  });
 }
