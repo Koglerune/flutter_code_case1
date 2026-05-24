@@ -7,15 +7,8 @@ import 'features/driver_board/views/driver_board_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Isar yerine artık Hive ayağa kalkıyor
   await LocalDatabase.initialize();
-  
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -25,9 +18,13 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
 
+    // Eğer veritabanı kutusu açılmadıysa bir yükleme ekranı göster
+    if (!LocalDatabase.driverBox.isOpen) {
+      return const MaterialApp(home: Scaffold(body: Center(child: CircularProgressIndicator())));
+    }
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Driver Board',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,

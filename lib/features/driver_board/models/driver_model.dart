@@ -11,22 +11,17 @@ enum DriverStatus {
 
 @HiveType(typeId: 1)
 class Driver extends HiveObject {
-  @HiveField(0)
-  late String id;
-
-  @HiveField(1)
-  late String name;
-
-  @HiveField(2)
-  late DriverStatus status;
-
-  @HiveField(3)
-  late DateTime lastUpdated;
+  @HiveField(0) late String id;
+  @HiveField(1) late String name;
+  @HiveField(2) late DriverStatus status;
+  @HiveField(3) late DateTime lastUpdated;
+  @HiveField(4) DateTime? tripStartTime;
 
   Driver({
-    required this.id,
-    required this.name,
-    this.status = DriverStatus.idle,
-    required this.lastUpdated,
+    required this.id, 
+    required this.name, 
+    required this.status, 
+    required this.lastUpdated, 
+    this.tripStartTime
   });
 }

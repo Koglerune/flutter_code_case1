@@ -1,45 +1,32 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/database/local_database.dart';
 import '../models/driver_model.dart';
 
-final driverListProvider = NotifierProvider<DriverListNotifier, List<Driver>>(
-  DriverListNotifier.new,
-);
+final driverListProvider = NotifierProvider<DriverListNotifier, List<Driver>>(DriverListNotifier.new);
+final activeDriverIdProvider = NotifierProvider<ActiveDriverNotifier, String>(ActiveDriverNotifier.new);
 
 class DriverListNotifier extends Notifier<List<Driver>> {
-  Box<Driver> get _box => LocalDatabase.driverBox;
-
   @override
-  List<Driver> build() {
-    return _box.values.toList();
-  }
-
-  void addDriver(String name) {
-    final newId = DateTime.now().millisecondsSinceEpoch.toString();
-    final newDriver = Driver(
-      id: newId,
-      name: name,
-      lastUpdated: DateTime.now(),
-    );
-
-    _box.put(newId, newDriver);
-    state = _box.values.toList();
-  }
+  List<Driver> build() => LocalDatabase.driverBox.values.toList();
 
   void updateDriverStatus(String id, DriverStatus newStatus) {
-    final driver = _box.get(id);
+    final driver = LocalDatabase.driverBox.get(id);
     if (driver != null) {
       driver.status = newStatus;
       driver.lastUpdated = DateTime.now();
-      
+      driver.tripStartTime = newStatus == DriverStatus.onRoute ? DateTime.now() : null;
       driver.save();
-      state = _box.values.toList();
+      state = LocalDatabase.driverBox.values.toList();
     }
   }
+}
 
-  void deleteDriver(String id) {
-    _box.delete(id);
-    state = _box.values.toList();
+class ActiveDriverNotifier extends Notifier<String> {
+  @override
+  String build() => LocalDatabase.settingsBox.get('activeDriverId', defaultValue: 'mert_kaya');
+
+  void setActiveDriver(String id) {
+    state = id;
+    LocalDatabase.settingsBox.put('activeDriverId', id);
   }
 }

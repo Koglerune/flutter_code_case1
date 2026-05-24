@@ -21,13 +21,14 @@ class DriverAdapter extends TypeAdapter<Driver> {
       name: fields[1] as String,
       status: fields[2] as DriverStatus,
       lastUpdated: fields[3] as DateTime,
+      tripStartTime: fields[4] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Driver obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -35,7 +36,9 @@ class DriverAdapter extends TypeAdapter<Driver> {
       ..writeByte(2)
       ..write(obj.status)
       ..writeByte(3)
-      ..write(obj.lastUpdated);
+      ..write(obj.lastUpdated)
+      ..writeByte(4)
+      ..write(obj.tripStartTime);
   }
 
   @override
