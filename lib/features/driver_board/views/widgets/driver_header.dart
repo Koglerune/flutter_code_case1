@@ -4,6 +4,7 @@ import '../../../../core/theme/theme_provider.dart';
 import '../../providers/driver_provider.dart';
 import '../../models/driver_model.dart';
 import 'driver_avatar.dart';
+import 'history_bottom_sheet.dart'; 
 
 class DriverHeader extends ConsumerWidget {
   final Driver driver;
@@ -22,7 +23,6 @@ class DriverHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isHistoryOpen = ref.watch(historyVisibilityProvider);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -45,11 +45,22 @@ class DriverHeader extends ConsumerWidget {
         Row(
           children: [
             GestureDetector(
-              onTap: () => ref.read(historyVisibilityProvider.notifier).toggle(),
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true, 
+                  backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+                  builder: (_) => FractionallySizedBox(
+                    heightFactor: 0.85, 
+                    child: HistoryBottomSheet(driver: driver),
+                  ),
+                );
+              },
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(shape: BoxShape.circle, color: isDark ? Colors.grey[800] : Colors.grey[200]),
-                child: Icon(Icons.history, color: isHistoryOpen ? Colors.green : (isDark ? Colors.white54 : Colors.black54)),
+                child: Icon(Icons.history, color: isDark ? Colors.white54 : Colors.black54),
               ),
             ),
             const SizedBox(width: 8),

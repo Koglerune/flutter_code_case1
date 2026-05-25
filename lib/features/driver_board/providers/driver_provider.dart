@@ -4,7 +4,6 @@ import '../models/driver_model.dart';
 
 final driverListProvider = NotifierProvider<DriverListNotifier, List<Driver>>(DriverListNotifier.new);
 final activeDriverIdProvider = NotifierProvider<ActiveDriverNotifier, String>(ActiveDriverNotifier.new);
-final historyVisibilityProvider = NotifierProvider<HistoryVisibilityNotifier, bool>(HistoryVisibilityNotifier.new);
 
 class DriverListNotifier extends Notifier<List<Driver>> {
   @override
@@ -37,15 +36,5 @@ class ActiveDriverNotifier extends Notifier<String> {
   void setActiveDriver(String id) {
     state = id;
     LocalDatabase.settingsBox.put('activeDriverId', id);
-  }
-}
-
-class HistoryVisibilityNotifier extends Notifier<bool> {
-  @override
-  bool build() => LocalDatabase.settingsBox.get('isHistoryOpen', defaultValue: false);
-
-  void toggle() {
-    state = !state;
-    LocalDatabase.settingsBox.put('isHistoryOpen', state);
   }
 }

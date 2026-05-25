@@ -54,7 +54,7 @@ class CurrentStatusCard extends StatelessWidget {
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 350),
             transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
-            layoutBuilder: (currentChild, previousChildren) => Stack(alignment: Alignment.centerLeft, children: <Widget>[...previousChildren, if (currentChild != null) currentChild]),
+            layoutBuilder: (currentChild, previousChildren) => Stack(alignment: Alignment.centerLeft, children: <Widget>[...previousChildren, ?currentChild]),
             child: Column(
               key: ValueKey(driver.status),
               crossAxisAlignment: CrossAxisAlignment.start,
