@@ -4,6 +4,10 @@ import 'package:flutter_code_case1/core/theme/theme_provider.dart';
 import 'package:flutter_code_case1/features/driver_board/providers/driver_provider.dart';
 import '../models/driver_model.dart';
 
+// Ayırdığımız widget'ları import ediyoruz
+import 'widgets/driver_history_list.dart';
+import 'widgets/status_button.dart';
+
 class DriverBoardView extends ConsumerWidget {
   const DriverBoardView({super.key});
 
@@ -24,6 +28,7 @@ class DriverBoardView extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
             children: [
+              // HEADER KISMI
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -66,7 +71,7 @@ class DriverBoardView extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               
-              // mevcut durum arkaplan rengi
+              // MEVCUT DURUM KARTI
               AnimatedContainer(
                 duration: const Duration(milliseconds: 400),
                 width: double.infinity,
@@ -77,10 +82,10 @@ class DriverBoardView extends ConsumerWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: isDark 
-                      ? [statusColor.withValues(alpha:0.2), const Color(0xFF1C1C1E)]
-                      : [statusColor.withValues(alpha:0.15), const Color(0xFFF3F4F6)],
+                      ? [statusColor.withValues(alpha: 0.2), const Color(0xFF1C1C1E)]
+                      : [statusColor.withValues(alpha: 0.15), const Color(0xFFF3F4F6)],
                   ),
-                  border: Border.all(color: statusColor.withValues(alpha:0.3), width: 1.5),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.3), width: 1.5),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,6 +112,7 @@ class DriverBoardView extends ConsumerWidget {
                 ),
               ),
               
+              // GEÇMİŞ LİSTESİ WIDGET'I
               AnimatedSize(
                 duration: const Duration(milliseconds: 400),
                 curve: Curves.easeInOut,
@@ -125,11 +131,13 @@ class DriverBoardView extends ConsumerWidget {
                     : const SizedBox.shrink(),
               ),
               const Spacer(),
-              _statusButton(ref, driver, "Boşta", DriverStatus.idle, Colors.grey),
+
+              // DURUM BUTONLARI WIDGET'LARI
+              StatusButton(driver: driver, text: "Boşta", status: DriverStatus.idle, color: Colors.grey),
               const SizedBox(height: 12),
-              _statusButton(ref, driver, "Yük Bekliyor", DriverStatus.waitingForLoad, Colors.orange),
+              StatusButton(driver: driver, text: "Yük Bekliyor", status: DriverStatus.waitingForLoad, color: Colors.orange),
               const SizedBox(height: 12),
-              _statusButton(ref, driver, "Seferde", DriverStatus.onRoute, Colors.green),
+              StatusButton(driver: driver, text: "Seferde", status: DriverStatus.onRoute, color: Colors.green),
               const SizedBox(height: 40),
             ],
           ),
@@ -139,23 +147,6 @@ class DriverBoardView extends ConsumerWidget {
   }
 
   String _statusText(DriverStatus status) => status == DriverStatus.idle ? "Boşta" : status == DriverStatus.waitingForLoad ? "Yük Bekliyor" : "Seferde";
-
-  Widget _statusButton(WidgetRef ref, Driver driver, String text, DriverStatus status, Color color) {
-    final isSelected = driver.status == status;
-    return SizedBox(
-      width: double.infinity, height: 56,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? color : Colors.transparent,
-          foregroundColor: isSelected ? Colors.white : color,
-          side: isSelected ? BorderSide.none : BorderSide(color: color),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
-        onPressed: () => ref.read(driverListProvider.notifier).updateDriverStatus(driver.id, status),
-        child: Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
-      ),
-    );
-  }
 
   void _showPicker(BuildContext context, WidgetRef ref, List<Driver> drivers) {
     showModalBottomSheet(context: context, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
@@ -170,68 +161,6 @@ class DriverBoardView extends ConsumerWidget {
             )
           )),
         ])),
-    );
-  }
-}
-
-class DriverHistoryList extends StatefulWidget {
-  final List<HistoryEntry> history;
-  const DriverHistoryList({super.key, required this.history});
-
-  @override
-  State<DriverHistoryList> createState() => _DriverHistoryListState();
-}
-
-class _DriverHistoryListState extends State<DriverHistoryList> {
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-  late List<HistoryEntry> _internalList;
-
-  @override
-  void initState() {
-    super.initState();
-    _internalList = List.from(widget.history);
-  }
-
-  @override
-  void didUpdateWidget(DriverHistoryList oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.history.length > _internalList.length) {
-      _internalList.insert(0, widget.history.first);
-      _listKey.currentState?.insertItem(0, duration: const Duration(milliseconds: 450));
-    } else if (widget.history.length != _internalList.length) {
-      _internalList = List.from(widget.history);
-    }
-  }
-
-  // logralın rengi için
-  Color _getLogColor(String statusText) {
-    if (statusText == "Boşta") return Colors.grey;
-    if (statusText == "Yük Bekliyor") return Colors.orange;
-    return Colors.green;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_internalList.isEmpty) {
-      return const Center(child: Text("Geçmiş kaydı bulunamadı."));
-    }
-    return AnimatedList(
-      key: _listKey,
-      initialItemCount: _internalList.length,
-      itemBuilder: (context, index, animation) {
-        final entry = _internalList[index];
-        return SlideTransition(
-          position: animation.drive(Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).chain(CurveTween(curve: Curves.easeOutCubic))),
-          child: SizeTransition(
-            sizeFactor: animation,
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(entry.statusText, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: _getLogColor(entry.statusText))),
-              trailing: Text("${entry.timestamp.hour.toString().padLeft(2, '0')}:${entry.timestamp.minute.toString().padLeft(2, '0')}", style: const TextStyle(color: Colors.grey, fontSize: 13)),
-            ),
-          ),
-        );
-      },
     );
   }
 }
