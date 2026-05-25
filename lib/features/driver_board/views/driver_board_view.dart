@@ -19,28 +19,38 @@ class DriverBoardView extends ConsumerWidget {
     
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            children: [
-              DriverHeader(driver: driver, drivers: drivers, activeId: activeId),
-              const SizedBox(height: 24),
-              
-              CurrentStatusCard(driver: driver),
-              const SizedBox(height: 20),
-              
-              VehicleInfoCard(truckName: driver.truckName),
-              
-              const Spacer(),
-              
-              StatusButton(driver: driver, text: "Boşta", status: DriverStatus.idle, color: Colors.grey),
-              const SizedBox(height: 12),
-              StatusButton(driver: driver, text: "Yük Bekliyor", status: DriverStatus.waitingForLoad, color: Colors.orange),
-              const SizedBox(height: 12),
-              StatusButton(driver: driver, text: "Seferde", status: DriverStatus.onRoute, color: Colors.green),
-              const SizedBox(height: 40),
-            ],
-          ),
+        child: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                child: Column(
+                  children: [
+                    DriverHeader(driver: driver, drivers: drivers, activeId: activeId),
+                    const SizedBox(height: 24),
+                    
+
+                    CurrentStatusCard(driver: driver),
+                    const SizedBox(height: 20),
+                    
+                    VehicleInfoCard(truckName: driver.truckName),
+                    
+                    const Spacer(),
+                    
+                    const SizedBox(height: 20),
+                    
+                    StatusButton(driver: driver, text: "Boşta", status: DriverStatus.idle, color: Colors.grey),
+                    const SizedBox(height: 12),
+                    StatusButton(driver: driver, text: "Yük Bekliyor", status: DriverStatus.waitingForLoad, color: Colors.orange),
+                    const SizedBox(height: 12),
+                    StatusButton(driver: driver, text: "Seferde", status: DriverStatus.onRoute, color: Colors.green),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
