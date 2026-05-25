@@ -29,7 +29,14 @@ class DriverBoardView extends ConsumerWidget {
                   Expanded(
                     child: ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text(driver.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      // İsim yanına aşağı ok butonu eklendi
+                      title: Row(
+                        children: [
+                          Text(driver.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                          const SizedBox(width: 8),
+                          Icon(Icons.expand_more, size: 22, color: isDark ? Colors.white54 : Colors.black54),
+                        ],
+                      ),
                       subtitle: Text("Durum: ${_statusText(driver.status)}"),
                       onTap: () => _showPicker(context, ref, drivers),
                     ),
@@ -45,6 +52,7 @@ class DriverBoardView extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 24),
+              
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -58,12 +66,22 @@ class DriverBoardView extends ConsumerWidget {
                   children: [
                     const Text("MEVCUT DURUM", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey)),
                     const SizedBox(height: 12),
-                    Text(_statusText(driver.status).toUpperCase(), style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: statusColor)),
-                    if (driver.tripStartTime != null) 
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text("Başlangıç: ${driver.tripStartTime!.hour.toString().padLeft(2, '0')}:${driver.tripStartTime!.minute.toString().padLeft(2, '0')}", style: const TextStyle(color: Colors.grey)),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 350),
+                      transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+                      child: Column(
+                        key: ValueKey(driver.status), // Animasyonu tetikleyen kilit nokta
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_statusText(driver.status).toUpperCase(), style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: statusColor)),
+                          if (driver.tripStartTime != null) 
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text("Başlangıç: ${driver.tripStartTime!.hour.toString().padLeft(2, '0')}:${driver.tripStartTime!.minute.toString().padLeft(2, '0')}", style: const TextStyle(color: Colors.grey)),
+                            ),
+                        ],
                       ),
+                    ),
                   ],
                 ),
               ),
