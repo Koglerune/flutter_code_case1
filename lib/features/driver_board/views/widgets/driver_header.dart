@@ -4,7 +4,7 @@ import '../../../../core/theme/theme_provider.dart';
 import '../../providers/driver_provider.dart';
 import '../../models/driver_model.dart';
 import 'driver_avatar.dart';
-import 'history_bottom_sheet.dart'; 
+import 'history_bottom_sheet.dart';
 
 class DriverHeader extends ConsumerWidget {
   final Driver driver;
@@ -48,11 +48,11 @@ class DriverHeader extends ConsumerWidget {
               onTap: () {
                 showModalBottomSheet(
                   context: context,
-                  isScrollControlled: true, 
+                  isScrollControlled: true,
                   backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
                   shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
                   builder: (_) => FractionallySizedBox(
-                    heightFactor: 0.85, 
+                    heightFactor: 0.85,
                     child: HistoryBottomSheet(driver: driver),
                   ),
                 );
@@ -102,7 +102,14 @@ class DriverHeader extends ConsumerWidget {
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     leading: DriverAvatar(name: d.name, status: d.status, size: 40),
-                    title: Text(d.name, style: TextStyle(fontSize: 16, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? (isDark ? Colors.white : Colors.black) : Colors.grey)),
+                    title: Text(
+                      d.name, 
+                      style: TextStyle(
+                        fontSize: 16, 
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, 
+                        color: isDark ? Colors.white : Colors.black87
+                      )
+                    ),
                     trailing: isSelected ? const Icon(Icons.check_circle, color: Colors.green, size: 28) : null,
                     onTap: () { ref.read(activeDriverIdProvider.notifier).setActiveDriver(d.id); Navigator.pop(context); },
                   );
