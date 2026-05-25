@@ -60,13 +60,17 @@ class DriverAdapter extends TypeAdapter<Driver> {
       lastUpdated: fields[3] as DateTime,
       tripStartTime: fields[4] as DateTime?,
       history: (fields[5] as List?)?.cast<HistoryEntry>(),
+      hoursWorkedToday: fields[6] == null ? 0 : fields[6] as int,
+      distanceTraveled: fields[7] == null ? 0 : fields[7] as int,
+      earnings: fields[8] == null ? 0.0 : fields[8] as double,
+      truckName: fields[9] == null ? '' : fields[9] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Driver obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -78,7 +82,15 @@ class DriverAdapter extends TypeAdapter<Driver> {
       ..writeByte(4)
       ..write(obj.tripStartTime)
       ..writeByte(5)
-      ..write(obj.history);
+      ..write(obj.history)
+      ..writeByte(6)
+      ..write(obj.hoursWorkedToday)
+      ..writeByte(7)
+      ..write(obj.distanceTraveled)
+      ..writeByte(8)
+      ..write(obj.earnings)
+      ..writeByte(9)
+      ..write(obj.truckName);
   }
 
   @override

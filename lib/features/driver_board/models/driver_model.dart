@@ -25,6 +25,10 @@ class Driver extends HiveObject {
   @HiveField(3) late DateTime lastUpdated;
   @HiveField(4) DateTime? tripStartTime;
   @HiveField(5) List<HistoryEntry>? history;
+  @HiveField(6, defaultValue: 0) late int hoursWorkedToday;
+  @HiveField(7, defaultValue: 0) late int distanceTraveled;
+  @HiveField(8, defaultValue: 0.0) late double earnings;
+  @HiveField(9, defaultValue: "") late String truckName;
 
   Driver({
     required this.id, 
@@ -33,5 +37,9 @@ class Driver extends HiveObject {
     required this.lastUpdated, 
     this.tripStartTime,
     this.history,
+    this.hoursWorkedToday = 0,
+    this.distanceTraveled = 0,
+    this.earnings = 0.0,
+    this.truckName = "",
   });
 }
