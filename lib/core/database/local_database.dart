@@ -9,6 +9,7 @@ class LocalDatabase {
     await Hive.initFlutter();
     Hive.registerAdapter(DriverAdapter());
     Hive.registerAdapter(DriverStatusAdapter());
+    Hive.registerAdapter(HistoryEntryAdapter());
 
     driverBox = await Hive.openBox<Driver>('drivers');
     settingsBox = await Hive.openBox('settings');
@@ -17,7 +18,13 @@ class LocalDatabase {
       final names = ['Mert Kaya', 'Caner Yılmaz', 'Ayşe Demir', 'Burak Öz', 'Deniz Ak'];
       for (var name in names) {
         final id = name.toLowerCase().replaceAll(' ', '_');
-        driverBox.put(id, Driver(id: id, name: name, status: DriverStatus.idle, lastUpdated: DateTime.now()));
+        driverBox.put(id, Driver(
+          id: id, 
+          name: name, 
+          status: DriverStatus.idle, 
+          lastUpdated: DateTime.now(),
+          history: [HistoryEntry(statusText: 'Boşta', timestamp: DateTime.now())],
+        ));
       }
     }
   }

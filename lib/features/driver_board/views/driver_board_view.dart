@@ -13,6 +13,7 @@ class DriverBoardView extends ConsumerWidget {
     final activeId = ref.watch(activeDriverIdProvider);
     final driver = drivers.firstWhere((d) => d.id == activeId);
     final isDark = ref.watch(themeProvider) == ThemeMode.dark;
+    final isHistoryOpen = ref.watch(historyVisibilityProvider);
 
     Color statusColor = driver.status == DriverStatus.idle ? Colors.grey : 
                         driver.status == DriverStatus.waitingForLoad ? Colors.orange : Colors.green;
@@ -29,7 +30,6 @@ class DriverBoardView extends ConsumerWidget {
                   Expanded(
                     child: ListTile(
                       contentPadding: EdgeInsets.zero,
-                      // İsim yanına aşağı ok butonu eklendi
                       title: Row(
                         children: [
                           Text(driver.name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
@@ -41,25 +41,46 @@ class DriverBoardView extends ConsumerWidget {
                       onTap: () => _showPicker(context, ref, drivers),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => ref.read(themeProvider.notifier).toggleTheme(),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(shape: BoxShape.circle, color: isDark ? Colors.grey[800] : Colors.grey[200]),
-                      child: Icon(isDark ? Icons.light_mode : Icons.dark_mode, color: isDark ? Colors.white : Colors.amber),
-                    ),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => ref.read(historyVisibilityProvider.notifier).toggle(),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: isDark ? Colors.grey[800] : Colors.grey[200]),
+                          child: Icon(Icons.history, color: isHistoryOpen ? Colors.green : (isDark ? Colors.white54 : Colors.black54)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () => ref.read(themeProvider.notifier).toggleTheme(),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: isDark ? Colors.grey[800] : Colors.grey[200]),
+                          child: Icon(isDark ? Icons.light_mode : Icons.dark_mode, color: isDark ? Colors.white : Colors.amber),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
               const SizedBox(height: 24),
               
-              Container(
+              // mevcut durum arkaplan rengi
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
-                  gradient: isDark ? const LinearGradient(colors: [Color(0xFF2C2C2E), Color(0xFF1C1C1E)])
-                                   : const LinearGradient(colors: [Color(0xFFE5E7EB), Color(0xFFF3F4F6)]),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark 
+                      ? [statusColor.withValues(alpha:0.2), const Color(0xFF1C1C1E)]
+                      : [statusColor.withValues(alpha:0.15), const Color(0xFFF3F4F6)],
+                  ),
+                  border: Border.all(color: statusColor.withValues(alpha:0.3), width: 1.5),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +91,7 @@ class DriverBoardView extends ConsumerWidget {
                       duration: const Duration(milliseconds: 350),
                       transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
                       child: Column(
-                        key: ValueKey(driver.status), // Animasyonu tetikleyen kilit nokta
+                        key: ValueKey(driver.status),
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(_statusText(driver.status).toUpperCase(), style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: statusColor)),
@@ -84,6 +105,24 @@ class DriverBoardView extends ConsumerWidget {
                     ),
                   ],
                 ),
+              ),
+              
+              AnimatedSize(
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+                child: isHistoryOpen
+                    ? Container(
+                        margin: const EdgeInsets.only(top: 20),
+                        width: double.infinity,
+                        height: 180,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(28),
+                          color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E7EB),
+                        ),
+                        child: DriverHistoryList(key: ValueKey(driver.id), history: driver.history ?? []),
+                      )
+                    : const SizedBox.shrink(),
               ),
               const Spacer(),
               _statusButton(ref, driver, "Boşta", DriverStatus.idle, Colors.grey),
@@ -131,6 +170,68 @@ class DriverBoardView extends ConsumerWidget {
             )
           )),
         ])),
+    );
+  }
+}
+
+class DriverHistoryList extends StatefulWidget {
+  final List<HistoryEntry> history;
+  const DriverHistoryList({super.key, required this.history});
+
+  @override
+  State<DriverHistoryList> createState() => _DriverHistoryListState();
+}
+
+class _DriverHistoryListState extends State<DriverHistoryList> {
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  late List<HistoryEntry> _internalList;
+
+  @override
+  void initState() {
+    super.initState();
+    _internalList = List.from(widget.history);
+  }
+
+  @override
+  void didUpdateWidget(DriverHistoryList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.history.length > _internalList.length) {
+      _internalList.insert(0, widget.history.first);
+      _listKey.currentState?.insertItem(0, duration: const Duration(milliseconds: 450));
+    } else if (widget.history.length != _internalList.length) {
+      _internalList = List.from(widget.history);
+    }
+  }
+
+  // logralın rengi için
+  Color _getLogColor(String statusText) {
+    if (statusText == "Boşta") return Colors.grey;
+    if (statusText == "Yük Bekliyor") return Colors.orange;
+    return Colors.green;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_internalList.isEmpty) {
+      return const Center(child: Text("Geçmiş kaydı bulunamadı."));
+    }
+    return AnimatedList(
+      key: _listKey,
+      initialItemCount: _internalList.length,
+      itemBuilder: (context, index, animation) {
+        final entry = _internalList[index];
+        return SlideTransition(
+          position: animation.drive(Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).chain(CurveTween(curve: Curves.easeOutCubic))),
+          child: SizeTransition(
+            sizeFactor: animation,
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(entry.statusText, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: _getLogColor(entry.statusText))),
+              trailing: Text("${entry.timestamp.hour.toString().padLeft(2, '0')}:${entry.timestamp.minute.toString().padLeft(2, '0')}", style: const TextStyle(color: Colors.grey, fontSize: 13)),
+            ),
+          ),
+        );
+      },
     );
   }
 }
